@@ -1,0 +1,23 @@
+{
+  "name": "comelyio/framework-kernel",
+  "description": "Kernel for Comely Framework",
+  "minimum-stability": "alpha",
+  "keywords": ["comely", "kernel", "framework"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Furqan A. Siddiqui",
+      "email": "mfsid@comely.io"
+    }
+  ],
+  "require": {
+    "php": ">=7.0.6"
+    "comelyio/comely": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Comely\\Framework\\Kernel\\": "src/Kernel/"
+    },
+    "files": ["src/Kernel.php"]
+  }
+}
