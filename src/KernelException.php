@@ -72,4 +72,27 @@ class KernelException extends \ComelyException
     {
         return new self($method, sprintf('"%1$s" is not a valid directory path', $path), 2006);
     }
+
+    /**
+     * @param string $error
+     * @return KernelException
+     */
+    public static function bootstrapError(string $error) : self
+    {
+        return new self("Comely\\Framework\\Kernel::bootstrap", $error, 2007);
+    }
+
+    /**
+     * @param string $method
+     * @param string $node
+     * @return KernelException
+     */
+    public static function badConfigNode(string $method, string $node) : self
+    {
+        return new self(
+            $method,
+            sprintf('Configuration node "%1$s" not found, or isn\'t a node'),
+            2008
+        );
+    }
 }

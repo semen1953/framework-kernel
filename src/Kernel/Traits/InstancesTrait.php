@@ -1,19 +1,21 @@
 <?php
 declare(strict_types=1);
 
-namespace Comely\Framework\Kernel;
+namespace Comely\Framework\Kernel\Traits;
 
 use Comely\IO\DependencyInjection\Container;
+use Comely\Framework\Kernel\DateTime;
+use Comely\Framework\Kernel\ErrorHandler;
+use Comely\IO\Security\Cipher;
 
 /**
  * Class InstancesTrait
- * @package Comely\Framework\Kernel
+ * @package Comely\Framework\Kernel\Traits
  */
 trait InstancesTrait
 {
     private $cipher;
-    private $config;
-    
+
     /**
      * @return Container
      */
@@ -36,5 +38,13 @@ trait InstancesTrait
     public function errorHandler() : ErrorHandler
     {
         return $this->errorHandler;
+    }
+
+    /**
+     * @return Cipher
+     */
+    public function getCipher() : Cipher
+    {
+        return $this->cipher;
     }
 }

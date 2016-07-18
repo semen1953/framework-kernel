@@ -18,6 +18,6 @@
     "psr-4": {
       "Comely\\Framework\\Kernel\\": "src/Kernel/"
     },
-    "files": ["src/Kernel.php"]
+    "files": ["src/Kernel.php", "src/KernelException.php"]
   }
 }

@@ -12,7 +12,8 @@ interface Constants
     const DS    =   DIRECTORY_SEPARATOR;
     const EOL   =   PHP_EOL;
     
-    const CONFIG_PATH   =   "app/config/config.yml";
+    const CONFIG_PATH   =   "app/config";
+    const CACHE_PATH    =   "tmp/cache";
 
     const ERRORS_DEFAULT    =   1;
     const ERRORS_COLLECT    =   2;

@@ -1,12 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace Comely\Framework\Kernel;
+namespace Comely\Framework\Kernel\Traits;
 
 use Comely\Framework\Kernel;
 use Comely\Framework\KernelException;
 use Comely\IO\Yaml\Yaml;
 
+/**
+ * Class PropertiesTrait
+ * @package Comely\Framework\Kernel\Traits
+ */
 trait PropertiesTrait
 {
     private $env;

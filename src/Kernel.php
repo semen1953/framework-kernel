@@ -3,22 +3,26 @@ declare(strict_types=1);
 
 namespace Comely\Framework;
 
-use Comely\Framework\Kernel\Config;
 use Comely\Framework\Kernel\Constants;
-use Comely\Framework\Kernel\DatabasesTrait;
 use Comely\Framework\Kernel\DateTime;
 use Comely\Framework\Kernel\ErrorHandler;
-use Comely\Framework\Kernel\InstancesTrait;
-use Comely\Framework\Kernel\PropertiesTrait;
+use Comely\Framework\Kernel\Traits\ConfigTrait;
+use Comely\Framework\Kernel\Traits\DatabasesTrait;
+use Comely\Framework\Kernel\Traits\InstancesTrait;
+use Comely\Framework\Kernel\Traits\PropertiesTrait;
 use Comely\IO\DependencyInjection\Container;
+use Comely\IO\DependencyInjection\Repository;
+use Comely\IO\Filesystem\Disk;
 
 class Kernel implements Constants
 {
     private $container;
     private $dateTime;
+    private $disks;
     private $errorHandler;
     private $bootstrapped   =   false;
-    
+
+    use ConfigTrait;
     use DatabasesTrait;
     use InstancesTrait;
     use PropertiesTrait;
@@ -39,27 +43,23 @@ class Kernel implements Constants
         {
             /// Add to container
             $this->container->add(
-                $component,
                 \Comely::baseClassName(
                     is_object($component) ? get_class($component) : $component
-                )
+                ),
+                $component
             );
         }
 
         // Set variables
-        $this->env  =   $env;
-        $this->rootPath =   ".";
         $this->dateTime =   new DateTime();
-        $this->errorHandler =   new ErrorHandler();
-    }
+        $this->env  =   $env;
+        $this->setRootPath(dirname(dirname(dirname(dirname(__DIR__)))));
+        //$this->errorHandler =   new ErrorHandler();
 
-    /**
-     * Load compiled configuration from cache if available
-     */
-    public function loadCachedConfig() : self
-    {
-        
-        return $this;
+        // Setup disks instances
+        $this->disks    =   new Repository();
+        $this->container->add("disks", $this->disks);
+        $this->disks->push(new Disk($this->rootPath . self::DS . self::CACHE_PATH), "cache");
     }
 
     /**
@@ -72,12 +72,12 @@ class Kernel implements Constants
             // Already bootstrapped?
             throw KernelException::bootstrapped();
         }
-        
-        // Read configuration
-        if(!$this->config instanceof Config) {
-            $this->config   =   new Config($this->rootPath . Kernel::DS . Kernel::CONFIG_PATH);
-        }
 
+        // Load configuration
+        $this->loadConfig();
+        
+        
+        $this->bootstrapped =   true;
         return $this;
     }
 }

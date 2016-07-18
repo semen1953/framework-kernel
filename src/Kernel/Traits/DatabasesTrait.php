@@ -1,27 +1,33 @@
 <?php
 declare(strict_types=1);
 
-namespace Comely\Framework\Kernel;
+namespace Comely\Framework\Kernel\Traits;
 
 use Comely\Framework\Kernel;
 use Comely\Framework\KernelException;
+use Comely\Framework\Kernel\PlainObject;
 use Comely\IO\Database\Database;
 
+/**
+ * Class DatabasesTrait
+ * @package Comely\Framework\Kernel\Traits
+ */
 trait DatabasesTrait
 {
     private $databases;
-    
+
     /**
      * Save database credentials
      *
      * Credentials are initially stored as associative arrays which are replaced with instances Database upon
      * first call to getDb() method
      *
-     * @param array $dbs
+     * @param PlainObject $dbs
      * @throws KernelException
      */
-    private function setDatabases(array $dbs)
+    private function setDatabases(PlainObject $dbs)
     {
+        $dbs    =   json_decode(json_encode($dbs), true);
         $requiredKeys   =   ["driver", "host", "username", "password", "name"];
 
         $this->databases    =   [];
