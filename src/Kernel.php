@@ -6,6 +6,7 @@ namespace Comely\Framework;
 use Comely\Framework\Kernel\Constants;
 use Comely\Framework\Kernel\DateTime;
 use Comely\Framework\Kernel\ErrorHandler;
+use Comely\Framework\Kernel\Traits\BootstrapTrait;
 use Comely\Framework\Kernel\Traits\ConfigTrait;
 use Comely\Framework\Kernel\Traits\DatabasesTrait;
 use Comely\Framework\Kernel\Traits\InstancesTrait;
@@ -22,6 +23,7 @@ class Kernel implements Constants
     private $errorHandler;
     private $bootstrapped   =   false;
 
+    use BootstrapTrait;
     use ConfigTrait;
     use DatabasesTrait;
     use InstancesTrait;
@@ -72,12 +74,28 @@ class Kernel implements Constants
             // Already bootstrapped?
             throw KernelException::bootstrapped();
         }
+        
+        // Pre-config IO components
+        if($this->container->has("Cipher")) {
+            $this->cipher   =   $this->container->get("Cipher");
+        }
 
         // Load configuration
         $this->loadConfig();
-        
+
         
         $this->bootstrapped =   true;
         return $this;
+    }
+
+    /**
+     * @param string $method
+     * @throws KernelException
+     */
+    public function isBootstrapped(string $method)
+    {
+        if(!$this->bootstrapped) {
+            throw KernelException::notBootstrapped($method);
+        }
     }
 }

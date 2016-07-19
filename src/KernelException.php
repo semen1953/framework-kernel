@@ -75,11 +75,12 @@ class KernelException extends \ComelyException
 
     /**
      * @param string $error
+     * @param int $code
      * @return KernelException
      */
-    public static function bootstrapError(string $error) : self
+    public static function bootstrapError(string $error, int $code = 2007) : self
     {
-        return new self("Comely\\Framework\\Kernel::bootstrap", $error, 2007);
+        return new self("Comely\\Framework\\Kernel::bootstrap", $error, $code);
     }
 
     /**
@@ -91,8 +92,17 @@ class KernelException extends \ComelyException
     {
         return new self(
             $method,
-            sprintf('Configuration node "%1$s" not found, or isn\'t a node'),
+            sprintf('Configuration node "%1$s" not found, or isn\'t a node', $node),
             2008
         );
+    }
+
+    /**
+     * @param string $method
+     * @return KernelException
+     */
+    public static function instanceNotAvailable(string $method) : self
+    {
+        return new self($method, 'Instance not available', 2009);
     }
 }

@@ -5,6 +5,7 @@ namespace Comely\Framework\Kernel\Traits;
 
 use Comely\Framework\Kernel;
 use Comely\Framework\Kernel\Config;
+use Comely\Framework\KernelException;
 use Comely\IO\Filesystem\Exception\DiskException;
 use Comely\IO\Filesystem\Disk;
 
@@ -19,9 +20,15 @@ trait ConfigTrait
     /**
      * Load compiled configuration from cache, if available
      * @return Kernel
+     * @throws KernelException
      */
     public function loadCachedConfig() : Kernel
     {
+        if($this->bootstrapped) {
+            // Already bootstrapped?
+            throw KernelException::bootstrapped();
+        }
+
         $configFile =   sprintf("bootstrap.config_%s.php.cache", $this->env);
         if(!isset($this->config)) {
             // Check if cached config file exists and is readable
@@ -83,8 +90,10 @@ trait ConfigTrait
             // Database component defined in container?
             if($this->container->has("Database")) {
                 $this->setDatabases($this->config->databases);
-                unset($this->config->databases);
             }
+            
+            // Remove databases node from config
+            unset($this->config->databases);
         }
 
         // App
@@ -92,29 +101,25 @@ trait ConfigTrait
             // Security
             if(property_exists($this->config->app, "security")) {
                 // Cipher Component
-                if($this->container->has("Cipher")) {
-                    $this->cipher   =   $this->container->get("Cipher");
-                    // Cipher Key
-                    if(
-                        property_exists($this->config->app->security, "cipherKey")  &&
-                        !empty($this->config->app->security->cipherKey)
-                    ) {
-                        $this->cipher->defaultSecret($this->config->app->security->cipherKey);
-                    }
-
-                    // Default hashing algorithm
-                    if(
-                        property_exists($this->config->app->security, "defaultHashAlgo")    &&
-                        !empty($this->config->app->security->defaultHashAlgo)
-                    ) {
-                        $this->cipher->defaultHashAlgo($this->config->app->security->defaultHashAlgo);
-                    }
+                if(isset($this->cipher)) {
+                    // Configure Cipher
+                    $this->registerCipher();
                 }
 
                 // Remove security prop. from config->app
                 unset($this->config->app->security);
             }
 
+            // Sessions
+            if($this->container->has("Session")) {
+                // Register Session
+                $this->registerSession();
+            }
+
+            // Translator
+            if($this->container->has("Translator")) {
+                $this->registerTranslator();
+            }
         }
     }
 

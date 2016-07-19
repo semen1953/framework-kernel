@@ -44,4 +44,25 @@ trait PropertiesTrait
     {
         return $this->rootPath;
     }
+
+    /**
+     * @param string $language
+     * @return bool
+     * @throws KernelException
+     */
+    public function setLanguage(string $language) : bool
+    {
+        $this->isBootstrapped(__METHOD__);
+        if($this->getTranslator()->languageExists($language)) {
+            $this->getSession()
+                ->getBags()
+                ->getBag("Comely")
+                ->getBag("Framework")
+                ->set("language", $language);
+
+            return true;
+        }
+
+        return false;
+    }
 }

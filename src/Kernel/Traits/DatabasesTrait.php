@@ -57,6 +57,8 @@ trait DatabasesTrait
      */
     public function getDb(string $id = null) : Database
     {
+        $this->isBootstrapped(__METHOD__);
+        
         if(!isset($id)) {
             // No reference ID provided, fetch first database
             $db =   reset($this->databases);
