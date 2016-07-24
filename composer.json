@@ -12,7 +12,8 @@
   ],
   "require": {
     "php": ">=7.0.6",
-    "comelyio/comely": "*"
+    "comelyio/comely": "*",
+    "comelyio/knit": "*"
   },
   "autoload": {
     "psr-4": {

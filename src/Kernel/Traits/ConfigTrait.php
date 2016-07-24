@@ -16,6 +16,7 @@ use Comely\IO\Filesystem\Disk;
 trait ConfigTrait
 {
     private $config;
+    private $devMode;
 
     /**
      * Load compiled configuration from cache, if available
@@ -98,6 +99,18 @@ trait ConfigTrait
 
         // App
         if(property_exists($this->config, "app")) {
+            // Timezone
+            if(property_exists($this->config->app, "timeZone")) {
+                $this->dateTime()->setTimezone($this->config->app->timeZone);
+            }
+
+            // Error Handler
+            if(property_exists($this->config->app, "errorHandler")) {
+                if(property_exists($this->config->app->errorHandler, "format")) {
+                    $this->errorHandler()->setFormat($this->config->app->errorHandler->format);
+                }
+            }
+            
             // Security
             if(property_exists($this->config->app, "security")) {
                 // Cipher Component
@@ -119,6 +132,11 @@ trait ConfigTrait
             // Translator
             if($this->container->has("Translator")) {
                 $this->registerTranslator();
+            }
+
+            // Knit
+            if($this->container->has("Knit")) {
+                
             }
         }
     }

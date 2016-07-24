@@ -4,14 +4,16 @@ declare(strict_types=1);
 namespace Comely\Framework\Kernel\Traits;
 
 use Comely\Framework\KernelException;
-use Comely\IO\DependencyInjection\Container;
 use Comely\Framework\Kernel\DateTime;
 use Comely\Framework\Kernel\ErrorHandler;
+use Comely\IO\DependencyInjection\Container;
+use Comely\IO\Filesystem\Disk;
 use Comely\IO\i18n\Translator;
 use Comely\IO\Security\Cipher;
 use Comely\IO\Session\ComelySession;
 use Comely\IO\Session\ComelySession\Proxy;
 use Comely\IO\Session\Session;
+use Comely\Knit;
 
 /**
  * Class InstancesTrait
@@ -22,6 +24,7 @@ trait InstancesTrait
     private $cipher;
     private $session;
     private $translator;
+    private $knit;
 
     /**
      * @return Container
@@ -30,6 +33,15 @@ trait InstancesTrait
     {
         $this->isBootstrapped(__METHOD__);
         return $this->container;
+    }
+
+    /**
+     * @param string $name
+     * @return Disk
+     */
+    public function getDisk(string $name) : Disk
+    {
+        return $this->disks->pull($name);
     }
 
     /**
@@ -114,5 +126,19 @@ trait InstancesTrait
         }
 
         return $this->translator;
+    }
+
+    /**
+     * @return Knit
+     * @throws KernelException
+     */
+    public function getKnit() : Knit
+    {
+        $this->isBootstrapped(__METHOD__);
+        if(!isset($this->knit)) {
+            throw KernelException::instanceNotAvailable(__METHOD__);
+        }
+
+        return $this->knit;
     }
 }

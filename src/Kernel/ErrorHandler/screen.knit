@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Comely — Standard Framework v{$version.kernel}</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style type="text/css">{literal}
+        @import '//fonts.googleapis.com/css?family=Open+Sans:300,400,600';
+
+        * {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 300;
+            font-size: 14pt;
+        }
+
+        body {
+            background-color: whitesmoke;
+        }
+
+        .alert {
+            border: 0;
+        }
+
+        div#container {
+            margin-top: 100px;
+        }
+
+        .page-header
+        {
+            border-bottom: 1px solid #cacaca;
+        }
+
+        .panel-title
+        {
+            font-size: inherit;
+            font-weight: inherit;
+        }
+
+        h1,h2,h3,h4,h5 {
+            font-weight: 300;
+        }
+
+        h1 small, h2 small, h3 small, h4 small, h5 small {
+            font-weight: 300;
+        }
+    </style>{/literal}
+</head>
+<body>
+    <div class="container" id="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="page-header"><h1>Comely <small>Standard Framework v{$version.kernel}</small></h1></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3 class="panel-title">{$error.source} “{$error.method}”</h3></div>
+                    <div class="panel-body">
+
+                        <div class="alert alert-danger">
+                            [{$error.code}] {$error.message}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                {if $display.backTrace  === true}
+                <p>Debug Backtrace:</p>
+                <ul class="list-group">
+                    {foreach $error.trace as $trace}
+                        <li class="list-group-item"><u>{$trace.method}</u> in <u>{$trace.file}</u> on line # <u>{$trace.line}</u></li>
+                    {/foreach}
+                </ul>
+                {/if}
+            </div>
+            <div class="col-md-6">Triggered Errors:</div>
+            {if $display.triggered  === true}
+            {foreach $triggered as $error}
+                <div class="alert alert-{if $error.type === 'notice'}warning{else}danger{/if}">
+                    {$error.formatted}
+                </div>
+            {foreachelse}
+                <p class="text-muted">No errors were triggered before script reached this screen</p>
+            {/foreach}
+            {/if}
+        </div>
+        <div class="row">
+            <div class="well well-sm">
+                This page was generated in %%knit-timer%% seconds
+            </div>
+        </div>
+    </div>
+</body>
+</html>

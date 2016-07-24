@@ -28,7 +28,7 @@ class Kernel implements Constants
     use DatabasesTrait;
     use InstancesTrait;
     use PropertiesTrait;
-
+    
     /**
      * Framework Kernel constructor.
      *

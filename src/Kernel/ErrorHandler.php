@@ -13,6 +13,7 @@ use Comely\IO\Toolkit\Parser;
  */
 class ErrorHandler
 {
+    private $kernel;
     private $format;
     private $logged;
     private $method;
@@ -20,9 +21,11 @@ class ErrorHandler
 
     /**
      * ErrorHandler constructor.
+     * @param Kernel $kernel
      */
-    public function __construct()
+    public function __construct(Kernel $kernel)
     {
+        $this->kernel   =   $kernel;
         $this->format   =   '[%type|strtoupper%] %message% in %file|basename% on %line%';
         $this->method   =   Kernel::ERRORS_DEFAULT;
         $this->ignoreNotice =   false;
