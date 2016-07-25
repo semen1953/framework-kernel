@@ -26,14 +26,14 @@ class ErrorHandler
     public function __construct(Kernel $kernel)
     {
         $this->kernel   =   $kernel;
-        $this->format   =   '[%type|strtoupper%] %message% in %file|basename% on %line%';
+        $this->format   =   '[%type|strtoupper%] %message% in %file|basename% on line # %line%';
         $this->method   =   Kernel::ERRORS_DEFAULT;
         $this->ignoreNotice =   false;
         $this->flush();
         
         set_error_handler([$this, "handleError"]);
-        set_exception_handler(function(\Throwable $ex) {
-           // TODO: Shutdown
+        set_exception_handler(function(\Throwable $ex) use ($kernel) {
+            (new Kernel\ErrorHandler\Screen($kernel))->send($ex);
         });
     }
 
@@ -73,7 +73,11 @@ class ErrorHandler
                 }
             }
         } else {
-            // TODO: Shutdown
+            try {
+                throw new \RuntimeException($message, $type);
+            } catch(\RuntimeException $e) {
+                (new Kernel\ErrorHandler\Screen($this->kernel))->send($e);
+            }
         }
     }
 

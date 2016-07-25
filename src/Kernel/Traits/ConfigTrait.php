@@ -101,13 +101,22 @@ trait ConfigTrait
         if(property_exists($this->config, "app")) {
             // Timezone
             if(property_exists($this->config->app, "timeZone")) {
-                $this->dateTime()->setTimezone($this->config->app->timeZone);
+                $this->dateTime->setTimezone($this->config->app->timeZone);
             }
 
             // Error Handler
             if(property_exists($this->config->app, "errorHandler")) {
+                // Format
                 if(property_exists($this->config->app->errorHandler, "format")) {
-                    $this->errorHandler()->setFormat($this->config->app->errorHandler->format);
+                    $this->errorHandler->setFormat($this->config->app->errorHandler->format);
+                }
+
+                // Flag for handling triggered error messages
+                $this->errorHandler->setFlag(Kernel::ERRORS_COLLECT);
+                if(property_exists($this->config->app->errorHandler, "hideErrors")) {
+                    if(!$this->config->app->errorHandler->hideErrors) {
+                        $this->errorHandler->setFlag(Kernel::ERRORS_DEFAULT);
+                    }
                 }
             }
             
@@ -136,7 +145,7 @@ trait ConfigTrait
 
             // Knit
             if($this->container->has("Knit")) {
-                
+                $this->registerKnit();
             }
         }
     }

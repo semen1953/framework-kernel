@@ -56,7 +56,7 @@ class Kernel implements Constants
         $this->dateTime =   new DateTime();
         $this->env  =   $env;
         $this->setRootPath(dirname(dirname(dirname(dirname(__DIR__)))));
-        //$this->errorHandler =   new ErrorHandler();
+        $this->errorHandler =   new ErrorHandler($this);
 
         // Setup disks instances
         $this->disks    =   new Repository();

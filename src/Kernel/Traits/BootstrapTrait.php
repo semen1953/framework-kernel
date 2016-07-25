@@ -5,6 +5,7 @@ namespace Comely\Framework\Kernel\Traits;
 
 use Comely\Framework\Kernel\Traits\Bootstrap\ServiceCipher;
 use Comely\Framework\Kernel\Traits\Bootstrap\ServiceSession;
+use Comely\Framework\Kernel\Traits\Bootstrap\ServiceKnit;
 use Comely\Framework\Kernel\Traits\Bootstrap\ServiceTranslator;
 
 /**
@@ -15,5 +16,6 @@ trait BootstrapTrait
 {
     use ServiceCipher;
     use ServiceSession;
+    use ServiceKnit;
     use ServiceTranslator;
 }

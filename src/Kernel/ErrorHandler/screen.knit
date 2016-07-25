@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Comely — Standard Framework v{$version.kernel}</title>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
     <style type="text/css">{literal}
         @import '//fonts.googleapis.com/css?family=Open+Sans:300,400,600';
 
@@ -22,7 +23,15 @@
         }
 
         div#container {
-            margin-top: 100px;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        @media screen and (min-width: 1024px) {
+            div#container {
+                margin-top: 100px;
+                margin-bottom: 100px;
+            }
         }
 
         .page-header
@@ -43,6 +52,22 @@
         h1 small, h2 small, h3 small, h4 small, h5 small {
             font-weight: 300;
         }
+
+        .list-group-item {
+            word-break: break-all;
+        }
+
+        .bg-danger {
+            background-color: #f2dede !important;
+        }
+
+        .bg-warning {
+            background-color: #fcf8e3 !important;
+        }
+
+        .bg-info {
+            background-color: #d9edf7 !important;
+        }
     </style>{/literal}
 </head>
 <body>
@@ -57,39 +82,57 @@
                 <div class="panel panel-default">
                     <div class="panel-heading"><h3 class="panel-title">{$error.source} “{$error.method}”</h3></div>
                     <div class="panel-body">
-
                         <div class="alert alert-danger">
                             [{$error.code}] {$error.message}
                         </div>
+                        <p class="">
+                            <i class="fa fa-file-code-o"></i> in “<u>{if $display.paths    === true}{$error.file}{else}{$error.file|basename}{/if}</u>” on line # <u>{$error.line}</u>
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
         <div class="row">
+            {if $display.backtrace  === true}
             <div class="col-md-6">
-                {if $display.backTrace  === true}
                 <p>Debug Backtrace:</p>
                 <ul class="list-group">
-                    {foreach $error.trace as $trace}
-                        <li class="list-group-item"><u>{$trace.method}</u> in <u>{$trace.file}</u> on line # <u>{$trace.line}</u></li>
-                    {/foreach}
+                {foreach $error.trace as $trace}
+                    <li class="list-group-item">
+                        <i class="fa fa-file-code-o"></i> <u>{$trace.method}()</u> in file  “<u>{if $display.paths === true}{$trace.file}{else}{$trace.file|basename}{/if}</u>” on line # <u>{$trace.line}</u>
+                    </li>
+                {foreachelse}
+                    <li class="list-group-item text-muted">(No backtrace information was found)</li>
+                {/foreach}
                 </ul>
-                {/if}
             </div>
-            <div class="col-md-6">Triggered Errors:</div>
+            {/if}
             {if $display.triggered  === true}
-            {foreach $triggered as $error}
-                <div class="alert alert-{if $error.type === 'notice'}warning{else}danger{/if}">
-                    {$error.formatted}
-                </div>
-            {foreachelse}
-                <p class="text-muted">No errors were triggered before script reached this screen</p>
-            {/foreach}
+            <div class="col-md-6">
+                    <p>Triggered Errors:</p>
+                    <ul class="list-group">
+                    {foreach $triggered as $error}
+                        <li class="list-group-item bg-{if $error.type|strtolower === 'notice'}info{elseif $error.type|strtolower === 'warning'}warning{else}danger{/if}">
+                            [{$error.type}] {$error.message} in file “<u>{if $display.paths   === true}{$error.file}{else}{$error.file|basename}{/if}</u>” on line # <u>{$error.line}</u>
+                        </li>
+                    {foreachelse}
+                        <li class="list-group-item text-muted">(No errors were triggered before script reached this screen)</li>
+                    {/foreach}
+                    </ul>
+            </div>
             {/if}
         </div>
         <div class="row">
-            <div class="well well-sm">
-                This page was generated in %%knit-timer%% seconds
+            <div class="col-xs-12">
+                <div class="well well-sm text-center">
+                    This page was generated in %%knit-timer%% seconds
+                </div>
+                <p class="text-center">Powered By:</p>
+                <p class="text-center">
+                    <a href="//github.com/comelyio/comely" target="_blank"><i class="fa fa-github"></i> comelyio/comely</a>: v{$version.comely}<br>
+                    <a href="//github.com/comelyio/framework-kernel" target="_blank"><i class="fa fa-github"></i> comelyio/framework-kernel</a>: v{$version.kernel}<br>
+                    <a href="//github.com/comelyio/knit" target="_blank"><i class="fa fa-github"></i> comelyio/knit:</a> v{$version.knit}
+                </p>
             </div>
         </div>
     </div>

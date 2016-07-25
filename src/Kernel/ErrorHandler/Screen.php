@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Comely\Framework\Kernel\ErrorHandler;
 
 use Comely\Framework\Kernel;
+use Comely\IO\Toolkit\Arrays;
 use Comely\Knit;
 
 /**
@@ -25,6 +26,7 @@ class Screen
 
     /**
      * @param \Throwable $t
+     * @throws \Comely\Framework\KernelException
      * @throws \Comely\KnitException
      */
     public function send(\Throwable $t)
@@ -57,19 +59,22 @@ class Screen
 
         // Populate Trace
         foreach($t->getTrace() as $trace) {
-            $trace["method"]    =   $trace["function"];
-            if(isset($trace["class"])) {
-                $trace["method"]    =   $trace["class"] . $trace["type"] . $trace["function"];
-            }
+            if(Arrays::hasKeys($trace, ["function","file","line"])) {
+                $trace["method"]    =   $trace["function"];
+                if(isset($trace["class"])) {
+                    $trace["method"]    =   $trace["class"] . $trace["type"] . $trace["function"];
+                }
 
-            $error["trace"][]   =   $trace;
+                $error["trace"][]   =   $trace;
+            }
         }
 
         // Config
         $config =   $this->kernel->config()->getNode("app");
         $display    =   [
             "backtrace" =>  $config["errorHandler"]["screen"]["debugBacktrace"] ?? false,
-            "triggered" =>  $config["errorHandler"]["screen"]["triggeredErrors"] ?? false
+            "triggered" =>  $config["errorHandler"]["screen"]["triggeredErrors"] ?? false,
+            "paths" =>  $config["errorHandler"]["screen"]["completePaths"] ?? false
         ];
 
         // Assign values
@@ -85,7 +90,12 @@ class Screen
 
         // Prepare template
         $screen =   $knit->prepare("screen.knit");
-        $screen =   str_replace("%%knit-timer%%", $screen->getTimer(), $screen->getOutput());
+        $screen =   str_replace(
+            "%%knit-timer%%",
+            number_format($screen->getTimer(), 6, ".", ""),
+            $screen->getOutput()
+        );
+
         exit($screen);
     }
 }
