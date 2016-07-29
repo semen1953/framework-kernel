@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 namespace Comely\Framework\Kernel\Traits\Bootstrap;
+
+use Comely\Framework\KernelException;
 use Comely\Knit;
 
 /**

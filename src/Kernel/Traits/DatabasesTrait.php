@@ -43,6 +43,11 @@ trait DatabasesTrait
                     // A required key is missing
                     throw KernelException::badDbCredentials($id, $required);
                 }
+
+                // Convert NULL types to empty strings
+                if(is_null($credentials[$required])) {
+                    $credentials[$required] =   "";
+                }
             }
 
             // Save credentials for time being
@@ -77,16 +82,30 @@ trait DatabasesTrait
 
         // Check if database instance was created
         if(is_array($db)) {
+            // Check for custom port
+            if(!empty($db["port"])) {
+                $db["host"] .=  ":" . $db["port"];
+            }
+
+            // SQLite Databases
+            if($db["driver"]    === "sqlite") {
+                // Prepend root path
+                $db["name"] =   $this->rootPath . self::DS . $db["name"];
+            }
+
             // Create instance on first call
             $persistent =   (array_key_exists("persistent", $db)    &&  $db["persistent"]   === true) ? true : false;
-            $this->databases[$id]   =   new Database(
+            $db =   new Database(
                 $db["driver"],
                 $db["name"],
                 $db["host"],
-                $db["user"],
-                $db["pass"],
+                $db["username"],
+                $db["password"],
                 $persistent
             );
+
+            // Override with instance of Database
+            $this->databases[$id]   =   $db;
         }
 
         // Return instance of Comely\IO\Database\Database

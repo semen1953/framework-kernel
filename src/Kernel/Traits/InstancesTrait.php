@@ -138,7 +138,7 @@ trait InstancesTrait
         if(!isset($this->knit)) {
             throw KernelException::instanceNotAvailable(__METHOD__);
         }
-
+        
         return $this->knit;
     }
 }

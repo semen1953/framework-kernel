@@ -33,7 +33,11 @@ class ErrorHandler
         
         set_error_handler([$this, "handleError"]);
         set_exception_handler(function(\Throwable $ex) use ($kernel) {
-            (new Kernel\ErrorHandler\Screen($kernel))->send($ex);
+            if($kernel->isBootstrapped(__METHOD__, true)) {
+                (new Kernel\ErrorHandler\Screen($kernel))->send($ex);
+            } else {
+                exit(strval($ex));
+            }
         });
     }
 

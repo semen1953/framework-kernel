@@ -90,12 +90,20 @@ class Kernel implements Constants
 
     /**
      * @param string $method
+     * @param bool $boolOnFail
+     * @return bool
      * @throws KernelException
      */
-    public function isBootstrapped(string $method)
+    public function isBootstrapped(string $method, bool $boolOnFail = false) : bool
     {
         if(!$this->bootstrapped) {
+            if($boolOnFail  === true) {
+                return false;
+            }
+
             throw KernelException::notBootstrapped($method);
         }
+
+        return true;
     }
 }
