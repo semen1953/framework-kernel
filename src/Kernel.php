@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Comely\Framework;
 
+use Comely\Framework\Kernel\Client;
 use Comely\Framework\Kernel\Constants;
 use Comely\Framework\Kernel\DateTime;
 use Comely\Framework\Kernel\ErrorHandler;
@@ -19,6 +20,7 @@ use Comely\IO\Filesystem\Disk;
 class Kernel implements Constants
 {
     private $bootstrapped   =   false;
+    private $client;
     private $container;
     private $dateTime;
     private $disks;
@@ -96,6 +98,7 @@ class Kernel implements Constants
     private function postBootstrap()
     {
         $this->security =   new Security($this); // Security
+        $this->client   =  new Client(); // Client
     }
 
     /**

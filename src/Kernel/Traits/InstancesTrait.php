@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Comely\Framework\Kernel\Traits;
 
+use Comely\Framework\Kernel\Client;
 use Comely\Framework\Kernel\Security;
 use Comely\Framework\KernelException;
 use Comely\Framework\Kernel\DateTime;
@@ -85,6 +86,20 @@ trait InstancesTrait
         }
 
         return $this->security;
+    }
+
+    /**
+     * @return Client
+     * @throws KernelException
+     */
+    public function client() : Client
+    {
+        $this->isBootstrapped(__METHOD__);
+        if(!isset($this->client)) {
+            throw KernelException::instanceNotAvailable(__METHOD__);
+        }
+
+        return $this->client;
     }
 
     /**

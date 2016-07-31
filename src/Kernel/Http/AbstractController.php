@@ -127,6 +127,7 @@ abstract class AbstractController implements ControllerInterface
                 $callMethod =   "getView";
             }
 
+
             // Check if method exists
             if(!method_exists($this, $callMethod)) {
                 throw new HttpException(
