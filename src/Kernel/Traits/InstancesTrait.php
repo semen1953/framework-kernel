@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Comely\Framework\Kernel\Traits;
 
+use Comely\Framework\Kernel\Security;
 use Comely\Framework\KernelException;
 use Comely\Framework\Kernel\DateTime;
 use Comely\Framework\Kernel\ErrorHandler;
@@ -70,6 +71,20 @@ trait InstancesTrait
         }
 
         return $this->errorHandler;
+    }
+
+    /**
+     * @return Security
+     * @throws KernelException
+     */
+    public function security() : Security
+    {
+        $this->isBootstrapped(__METHOD__);
+        if(!isset($this->security)) {
+            throw KernelException::instanceNotAvailable(__METHOD__);
+        }
+
+        return $this->security;
     }
 
     /**

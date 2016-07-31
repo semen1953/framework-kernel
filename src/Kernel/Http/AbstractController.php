@@ -65,14 +65,26 @@ abstract class AbstractController implements ControllerInterface
      * @param string $param
      * @throws \Comely\Framework\KernelException
      */
-    public function knitBody(Knit $knit, string $tpl, string $param = "body")
+    public function knit(Knit $knit, string $tpl, string $param = "body")
     {
+        // Get CSRF token
+        $csrfToken  =   $this->app->security()->csrf()->getToken();
+        if(!$csrfToken) {
+            // Set new CSRF token as it is not already set
+            $csrfToken  =   $this->app->security()->csrf()->setToken();
+        }
+
+        // Set "csrfToken" prop in Page object
+        $this->page->setProp("csrfToken", $csrfToken);
+
+        // Assign variables to Knit
         $knit->assign("errors", $this->app->errorHandler()->fetchAll());
         $knit->assign("page", $this->page->getArray());
         $knit->assign("config", [
             "site" => $this->app->config()->getNode("site")
         ]);
 
+        // Prepare template and set in Response object
         $template   =   $knit->prepare($tpl);
         $this->response->set($param, $template->getOutput());
     }

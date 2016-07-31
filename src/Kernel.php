@@ -6,6 +6,7 @@ namespace Comely\Framework;
 use Comely\Framework\Kernel\Constants;
 use Comely\Framework\Kernel\DateTime;
 use Comely\Framework\Kernel\ErrorHandler;
+use Comely\Framework\Kernel\Security;
 use Comely\Framework\Kernel\Traits\BootstrapTrait;
 use Comely\Framework\Kernel\Traits\ConfigTrait;
 use Comely\Framework\Kernel\Traits\DatabasesTrait;
@@ -17,11 +18,12 @@ use Comely\IO\Filesystem\Disk;
 
 class Kernel implements Constants
 {
+    private $bootstrapped   =   false;
     private $container;
     private $dateTime;
     private $disks;
     private $errorHandler;
-    private $bootstrapped   =   false;
+    private $security;
 
     use BootstrapTrait;
     use ConfigTrait;
@@ -80,12 +82,20 @@ class Kernel implements Constants
             $this->cipher   =   $this->container->get("Cipher");
         }
 
-        // Load configuration
-        $this->loadConfig();
+        $this->loadConfig(); // Load configuration
 
-        
-        $this->bootstrapped =   true;
+        $this->bootstrapped =   true; // Declare bootstrapped
+        $this->postBootstrap(); // Post bootstrap execution
+
         return $this;
+    }
+
+    /**
+     * This method is executed AFTER kernel is bootstrapped
+     */
+    private function postBootstrap()
+    {
+        $this->security =   new Security($this); // Security
     }
 
     /**

@@ -21,6 +21,7 @@ class Page
         $this->props    =   [
             "title" =>  "",
             "root"  =>  "",
+            "csrfToken" =>  "",
             "index" =>  ["a" => 0, "b" => 0, "c" => 0]
         ];
     }
