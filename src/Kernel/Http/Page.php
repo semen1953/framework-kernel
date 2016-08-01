@@ -50,10 +50,10 @@ class Page
 
     /**
      * @param string $name
-     * @param string $value
+     * @param $value
      * @return Page
      */
-    public function setProp(string $name, string $value) : self
+    public function setProp(string $name, $value) : self
     {
         $this->props[$name] =   $value;
         return $this;

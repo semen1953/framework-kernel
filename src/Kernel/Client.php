@@ -17,7 +17,7 @@ class Client
     
     public function __construct()
     {
-        $this->https    =   $_SERVER["HTTPS"] ? true : false;
+        $this->https    =   !empty($_SERVER["HTTPS"]) ? true : false;
         $this->ipAddress    =   $_SERVER["HTTP_CF_CONNECTING_IP"] ?? $_SERVER["REMOTE_ADDR"] ?? "";
         $this->origin   =   $_SERVER["HTTP_REFERER"] ?? "";
         $this->port =   $_SERVER["REMOTE_PORT"] ?? 0;
