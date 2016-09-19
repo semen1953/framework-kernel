@@ -5,6 +5,7 @@ namespace Comely\Framework\Kernel\Http;
 
 use Comely\Framework\Kernel;
 use Comely\Framework\Kernel\Exception\HttpException;
+use Comely\Framework\KernelException;
 use Comely\IO\Http\Controllers\ControllerInterface;
 use Comely\IO\Http\Request;
 use Comely\IO\Http\Request\Response;
@@ -21,10 +22,14 @@ abstract class AbstractController implements ControllerInterface
     protected $app;
 
     protected $controller;
+    /** @var  Request\Input */
     protected $input;
     protected $method;
+    /** @var Page */
     protected $page;
+    /** @var  Request */
     protected $request;
+    /** @var  Response */
     protected $response;
     protected $uri;
 
@@ -110,12 +115,12 @@ abstract class AbstractController implements ControllerInterface
 
         try {
             // Check if we have necessary param to build method name
-            if(!empty($params[self::REST_METHOD_PARAM])) {
-                $callMethod =   $this->method . "_" . $params[self::REST_METHOD_PARAM];
-                $callMethod =   \Comely::camelCase($callMethod);
+            if (!empty($params[self::REST_METHOD_PARAM])) {
+                $callMethod = $this->method . "_" . $params[self::REST_METHOD_PARAM];
+                $callMethod = \Comely::camelCase($callMethod);
             } else {
                 // Necessary param not found
-                if($this->method    !== "GET") {
+                if ($this->method !== "GET") {
                     // Throw exception if request method is not GET
                     throw new HttpException(
                         get_called_class(),
@@ -124,12 +129,12 @@ abstract class AbstractController implements ControllerInterface
                 }
 
                 // If method is GET, default method is getView
-                $callMethod =   "getView";
+                $callMethod = "getView";
             }
 
 
             // Check if method exists
-            if(!method_exists($this, $callMethod)) {
+            if (!method_exists($this, $callMethod)) {
                 throw new HttpException(
                     get_called_class(),
                     sprintf(
@@ -140,12 +145,12 @@ abstract class AbstractController implements ControllerInterface
             }
 
             // Call "callBack" method prior to calling request method
-            call_user_func([$this,"callBack"]);
+            call_user_func([$this, "callBack"]);
 
             // Call method
-            call_user_func([$this,$callMethod]);
-        } catch(\Throwable $t) {
-            $this->response->set("message", $t->getMessage());
+            call_user_func([$this, $callMethod]);
+        } catch (KernelException $e) {
+            $this->response->set("message", $e->getMessage());
         }
 
         // Check number of props in Response object,
