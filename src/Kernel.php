@@ -17,6 +17,10 @@ use Comely\IO\DependencyInjection\Container;
 use Comely\IO\DependencyInjection\Repository;
 use Comely\IO\Filesystem\Disk;
 
+/**
+ * Class Kernel
+ * @package Comely\Framework
+ */
 class Kernel implements Constants
 {
     private $bootstrapped   =   false;
