@@ -3,14 +3,13 @@ declare(strict_types=1);
 
 namespace Comely\Framework\Kernel\Http;
 
-use Comely\Framework\Kernel\Http\AbstractController;
-
 /**
  * Class Page
  * @package Http
  */
 class Page
 {
+    /** @var array */
     private $props;
 
     /**

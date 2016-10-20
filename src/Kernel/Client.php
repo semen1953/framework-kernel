@@ -9,10 +9,15 @@ namespace Comely\Framework\Kernel;
  */
 class Client
 {
+    /** @var bool */
     public $https;
+    /** @var string */
     public $ipAddress;
+    /** @var string */
     public $origin;
+    /** @var int */
     public $port;
+    /** @var string */
     public $userAgent;
     
     public function __construct()

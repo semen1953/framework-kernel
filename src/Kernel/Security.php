@@ -13,8 +13,11 @@ use Comely\IO\Security\Forms;
  */
 class Security
 {
+    /** @var \Comely\IO\Session\ComelySession\Bag */
     private $sessionBag;
+    /** @var CSRF */
     private $csrf;
+    /** @var Forms */
     private $forms;
 
     /**

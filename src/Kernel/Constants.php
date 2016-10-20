@@ -9,7 +9,7 @@ namespace Comely\Framework\Kernel;
  */
 interface Constants
 {
-    const VERSION   =   "0.1.2-beta";
+    const VERSION   =   "0.1.7-beta";
 
     const DS    =   DIRECTORY_SEPARATOR;
     const EOL   =   PHP_EOL;

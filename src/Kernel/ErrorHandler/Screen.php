@@ -13,6 +13,7 @@ use Comely\Knit;
  */
 class Screen
 {
+    /** @var Kernel */
     private $kernel;
 
     /**
@@ -49,7 +50,7 @@ class Screen
         $error["message"]   =   method_exists($t, "getTranslated") ? $t->getTranslated() : $t->getMessage();
 
         // Check if exception is child of ComelyException
-        if(is_subclass_of($t, "ComelyException")) {
+        if(method_exists($t, "getMethod")   &&  is_subclass_of($t, "ComelyException")) {
             $error["method"]    =   $t->getMethod();
             $error["source"]    =   "Component";
         } else {

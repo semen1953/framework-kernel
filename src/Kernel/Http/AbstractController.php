@@ -19,11 +19,13 @@ abstract class AbstractController implements ControllerInterface
 {
     const REST_METHOD_PARAM =   "action";
 
+    /** @var Kernel */
     protected $app;
-
+    /** @var  ControllerInterface */
     protected $controller;
     /** @var  Request\Input */
     protected $input;
+    /** @var  string */
     protected $method;
     /** @var Page */
     protected $page;
@@ -31,6 +33,7 @@ abstract class AbstractController implements ControllerInterface
     protected $request;
     /** @var  Response */
     protected $response;
+    /** @var string */
     protected $uri;
 
     /**

@@ -13,10 +13,15 @@ use Comely\IO\Toolkit\Parser;
  */
 class ErrorHandler
 {
+    /** @var Kernel */
     private $kernel;
+    /** @var string */
     private $format;
+    /** @var array */
     private $logged;
+    /** @var int */
     private $method;
+    /** @var bool */
     private $ignoreNotice;
 
     /**
@@ -54,6 +59,7 @@ class ErrorHandler
     public function handleError(int $type, string $message, string $file, int $line, array $context = null)
     {
         if(error_reporting()    === 0)  return false;
+        if($context) {}
 
         if(in_array($type, [2,8,512,1024,2048,8192,16384])) {
             $ignore =   $type   === 8 ? $this->ignoreNotice : false;
@@ -83,6 +89,8 @@ class ErrorHandler
                 (new Kernel\ErrorHandler\Screen($this->kernel))->send($e);
             }
         }
+
+        return true;
     }
 
     /**

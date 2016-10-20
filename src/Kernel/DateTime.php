@@ -11,6 +11,7 @@ use Comely\Framework\Kernel\Exception\DateTimeException;
  */
 class DateTime
 {
+    /** @var string */
     private $timeZone;
 
     /**

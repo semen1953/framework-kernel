@@ -11,6 +11,7 @@ use Comely\Framework\KernelException;
  */
 class ErrorHandlerException extends KernelException
 {
+    /** @var string */
     protected static $componentId   =   "Comely\\Framework\\Kernel\\ErrorHandler";
 
     /**

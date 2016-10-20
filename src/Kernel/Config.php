@@ -8,6 +8,13 @@ use Comely\IO\Yaml\Yaml;
 
 class Config
 {
+    /** @var PlainObject|null */
+    public $app;
+    /** @var PlainObject|null */
+    public $databases;
+    /** @var PlainObject|null */
+    public $site;
+
     /**
      * Config constructor.
      * @param string $configFile
