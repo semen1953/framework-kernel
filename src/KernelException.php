@@ -74,16 +74,6 @@ class KernelException extends \ComelyException
     }
 
     /**
-     * @param string $error
-     * @param int $code
-     * @return KernelException
-     */
-    public static function bootstrapError(string $error, int $code = 2007) : self
-    {
-        return new self("Comely\\Framework\\Kernel::bootstrap", $error, $code);
-    }
-
-    /**
      * @param string $method
      * @param string $node
      * @return KernelException

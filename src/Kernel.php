@@ -17,7 +17,7 @@ use Comely\IO\Filesystem\Disk;
 use Comely\IO\Filesystem\Exception\DiskException;
 use Comely\IO\i18n\Translator;
 use Comely\IO\Security\Cipher;
-use Comely\IO\Session\ComelySession\Proxy;
+use Comely\IO\Session\ComelySession;
 use Comely\IO\Session\Session;
 use Comely\IO\Yaml\Yaml;
 use Comely\Knit;
@@ -439,10 +439,10 @@ class Kernel extends Bootstrapper
     }
 
     /**
-     * @return Proxy
+     * @return ComelySession
      * @throws KernelException
      */
-    public function getSession() : Proxy
+    public function getSession() : ComelySession
     {
         $this->isBootstrapped(__METHOD__);
         if(!isset($this->session)) {
