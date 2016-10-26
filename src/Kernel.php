@@ -267,6 +267,18 @@ class Kernel extends Bootstrapper
                 unset($this->config->app->security);
             }
 
+            // Mailer
+            if($this->container->has("Mailer")) {
+                // Register Mailer
+                $this->registerMailer();
+            }
+
+            // Cache
+            if($this->container->has("Cache")) {
+                // Register Cache
+                $this->registerCache();
+            }
+
             // Sessions
             if($this->container->has("Session")) {
                 // Register Session

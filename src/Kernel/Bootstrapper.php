@@ -5,13 +5,17 @@ namespace Comely\Framework\Kernel;
 
 use Comely\Framework\Kernel;
 use Comely\Framework\Kernel\Exception\BootstrapException;
+use Comely\IO\Cache\Cache;
+use Comely\IO\Cache\CacheException;
 use Comely\IO\DependencyInjection\Container;
 use Comely\IO\DependencyInjection\Repository;
+use Comely\IO\Emails\Mailer;
 use Comely\IO\Filesystem\Disk;
 use Comely\IO\Filesystem\Exception\DiskException;
 use Comely\IO\i18n\Translator;
 use Comely\IO\Security\Cipher;
 use Comely\IO\Session\Session;
+use Comely\IO\Session\Storage;
 use Comely\IO\Toolkit\Time;
 use Comely\Knit;
 
@@ -21,17 +25,21 @@ use Comely\Knit;
  */
 abstract class Bootstrapper implements Constants
 {
+    /** @var null|Cache */
+    protected $cache;
     /** @var Container */
     protected $container;
     /** @var Config */
     protected $config;
-    /** @var Cipher */
+    /** @var null|Cipher */
     protected $cipher;
-    /** @var Session */
+    /** @var null|Mailer */
+    protected $mailer;
+    /** @var null|Session */
     protected $session;
-    /** @var Translator */
+    /** @var null|Translator */
     protected $translator;
-    /** @var Knit */
+    /** @var null|Knit */
     protected $knit;
     /** @var string|null */
     protected $rootPath;
@@ -57,6 +65,74 @@ abstract class Bootstrapper implements Constants
             !empty($this->config->app->security->defaultHashAlgo)
         ) {
             $this->cipher->defaultHashAlgo($this->config->app->security->defaultHashAlgo);
+        }
+    }
+
+    /**
+     * Register Cache Component
+     * @throws BootstrapException
+     */
+    protected function registerCache()
+    {
+        // Container has Cache component, must be defined in config
+        if(!property_exists($this->config->app, "cache")) {
+            throw BootstrapException::cacheNode();
+        }
+
+        $cacheConfig    =   $this->config->app->cache; // Cache configuration
+
+        // Make sure STATUS is set and is bool
+        if(!property_exists($cacheConfig, "status") ||  !is_bool($cacheConfig->status)) {
+            throw BootstrapException::cacheStatus();
+        }
+
+        // Not use cache?
+        if($this->config->app->cache->status    !== true) {
+            return; // Return
+        }
+
+        // Which cache engine to use?
+        if(!property_exists($cacheConfig, "engine") ||  !is_string($cacheConfig->engine)) {
+            throw BootstrapException::cacheEngine("");
+        }
+
+        switch (strtolower($cacheConfig->engine)) {
+            case "redis":
+                $cacheEngine    =   Cache::ENGINE_REDIS;
+                break;
+            case "memcached":
+                $cacheEngine    =   Cache::ENGINE_MEMCACHED;
+                break;
+            default:
+                throw BootstrapException::cacheEngine($cacheConfig->engine);
+        }
+
+        $cacheHost  =   $cacheConfig->host ?? "127.0.0.1";
+        $cachePort  =   intval($cacheConfig->port ?? 8000);
+
+        $this->cache    =   $this->container->get("Cache");
+        $this->cache->addServer($cacheHost, $cachePort, 1, $cacheEngine);
+
+        try {
+            $this->cache->connect();
+        } catch (\ComelyException $e) {
+            if(property_exists($cacheConfig, "terminate")) {
+                if($cacheConfig->terminate  === true) {
+                    throw new BootstrapException(__METHOD__, $e->getMessage(), $e->getCode());
+                }
+            }
+
+            // Trigger E_USER_WARNING
+            trigger_error(
+                sprintf(
+                    'Failed to connect with %1$s server on %2$s:%3$d: %4$s',
+                    strtoupper($cacheConfig->engine),
+                    $cacheHost,
+                    $cachePort,
+                    $e->getMessage()
+                ),
+                E_USER_WARNING
+            );
         }
     }
 
@@ -115,14 +191,36 @@ abstract class Bootstrapper implements Constants
             throw BootstrapException::sessionNode();
         }
 
+        $sessionsConfig =   $this->config->app->sessions;
+
         // Means of storage must be defined
         try {
+            // Use Cache?
+            if(property_exists($sessionsConfig, "useCache") &&  $sessionsConfig->useCache   === true) {
+                if(!$this->cache instanceof Cache) {
+                    throw BootstrapException::sessionCache();
+                }
+
+                try {
+                    $this->cache->poke(false); // Poke cache engine; Don't reconnect
+                    $cache  =   $this->cache; // Ref. cache instance
+                } catch (CacheException $e) {
+                    trigger_error(sprintf('%s: %s', __METHOD__, $e->getMessage()), E_USER_WARNING);
+                }
+            }
+
             /** @var $this Kernel */
-            if(property_exists($this->config->app->sessions, "storageDb")) {
-                $storage    =   $this->getDb($this->config->app->sessions->storageDb);
+            if(isset($cache)    &&  $cache instanceof Cache) {
+                $storage    =   Storage::Cache($cache);
+            } elseif(property_exists($this->config->app->sessions, "storageDb")) {
+                $storage    =   Storage::Database(
+                    $this->getDb($this->config->app->sessions->storageDb)
+                );
             } elseif(property_exists($this->config->app->sessions, "storagePath")) {
-                $storage    =   new Disk(
-                    $this->rootPath . self::DS . $this->config->app->sessions->storagePath
+                $storage    =   Storage::Disk(
+                    new Disk(
+                        $this->rootPath . self::DS . $this->config->app->sessions->storagePath
+                    )
                 );
             } else {
                 // No storage configuration was set
@@ -301,5 +399,68 @@ abstract class Bootstrapper implements Constants
 
         // Return Language instance
         return $lang;
+    }
+
+    /**
+     * Register Mailer Component
+     * @throws BootstrapException
+     */
+    protected function registerMailer()
+    {
+        // Container has Mailer component, must be defined in config
+        if(!property_exists($this->config->app, "mailer")) {
+            throw BootstrapException::mailerNode();
+        }
+
+        $mailerConfig   =   $this->config->app->mailer;
+        if(!property_exists($mailerConfig, "agent") ||  !is_string($mailerConfig->agent)) {
+            throw BootstrapException::mailerAgent("");
+        }
+
+        switch (strtolower($mailerConfig->agent)) {
+            case "sendmail":
+                $useSMTP    =   false;
+                break;
+            case "smtp";
+                $useSMTP    =   true;
+                break;
+            default:
+                throw BootstrapException::mailerAgent($mailerConfig->agent);
+        }
+
+        $this->mailer   =   $this->container->get("Mailer"); // Grab Mailer Instance
+
+        // Configure default sender name and email
+        $senderName =   $mailerConfig->senderName ?? null;
+        if(is_string($senderName)) {
+            $this->mailer->senderName($senderName);
+        }
+
+        $senderEmail    =   $mailerConfig->senderEmail ?? null;
+        if(is_string($senderEmail)) {
+            $this->mailer->senderEmail($senderEmail);
+        }
+
+        // Configure SMTP
+        if($useSMTP) {
+            $smtpHost   =   $mailerConfig->host ?? "127.0.0.1";
+            $smtpPort   =   intval($mailerConfig->port ?? 25);
+            $smtpTimeout    =   intval($mailerConfig->timeOut ?? 1);
+            $smtpUsername   =   $mailerConfig->username ?? "";
+            $smtpPassword   =   $mailerConfig->password ?? "";
+            $smtpTLS    =   $mailerConfig->useTls ?? true;
+            $smtpTLS    =   $smtpTLS    === false ? false : true;
+            $smtpServerName =   $mailerConfig->serverName ?? null;
+
+            $smtp   =   (new Mailer\SMTP($smtpHost, $smtpPort, $smtpTimeout))
+                ->useTLS($smtpTLS);
+            if(!empty($smtpUsername)    &&  !empty($smtpPassword)) {
+                $smtp->authCredentials((string) $smtpUsername, (string) $smtpPassword);
+            }
+
+            if(!empty($smtpServerName)  &&  is_string($smtpServerName)) {
+                $smtp->serverName($smtpServerName);
+            }
+        }
     }
 }

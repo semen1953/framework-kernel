@@ -7,6 +7,6 @@ namespace Comely\Framework\Kernel;
  * Class PlainObject
  * @package Comely\Framework\Kernel
  */
-class PlainObject extends \stdClass
+class PlainObject
 {
 }
