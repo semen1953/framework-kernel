@@ -212,15 +212,11 @@ abstract class Bootstrapper implements Constants
             /** @var $this Kernel */
             if(isset($cache)    &&  $cache instanceof Cache) {
                 $storage    =   Storage::Cache($cache);
-            } elseif(property_exists($this->config->app->sessions, "storageDb")) {
-                $storage    =   Storage::Database(
-                    $this->getDb($this->config->app->sessions->storageDb)
-                );
-            } elseif(property_exists($this->config->app->sessions, "storagePath")) {
+            } elseif(property_exists($sessionsConfig, "storageDb")) {
+                $storage    =   Storage::Database($this->getDb($sessionsConfig->storageDb));
+            } elseif(property_exists($sessionsConfig, "storagePath")) {
                 $storage    =   Storage::Disk(
-                    new Disk(
-                        $this->rootPath . self::DS . $this->config->app->sessions->storagePath
-                    )
+                    new Disk($this->rootPath . self::DS . $sessionsConfig->storagePath)
                 );
             } else {
                 // No storage configuration was set
@@ -232,13 +228,13 @@ abstract class Bootstrapper implements Constants
 
             // Session configuration
             // Expiry
-            if(property_exists($this->config->app->sessions, "expire")) {
-                $this->session->setSessionLife(Time::unitsToSeconds($this->config->app->sessions->expire));
+            if(property_exists($sessionsConfig, "expire")) {
+                $this->session->setSessionLife(Time::unitsToSeconds($sessionsConfig->expire));
             }
 
             // Encryption
-            if(property_exists($this->config->app->sessions, "encrypt")) {
-                if($this->config->app->sessions->encrypt    === true) {
+            if(property_exists($sessionsConfig, "encrypt")) {
+                if($sessionsConfig->encrypt    === true) {
                     if(!isset($this->cipher)) {
                         throw BootstrapException::cipherService();
                     }
@@ -249,30 +245,32 @@ abstract class Bootstrapper implements Constants
 
             // Cookie
             $cookie =   [false, "30d", "", "", false, true];
-            if(property_exists($this->config->app->sessions, "cookie")) {
+            if(property_exists($sessionsConfig, "cookie")) {
                 $cookie[0]  =   true;
                 $cookieArgCount =   1;
                 foreach(["expire","path","domain","secure","httpOnly"] as $cookieArg) {
-                    if(property_exists($this->config->app->sessions->cookie, $cookieArg)) {
-                        $cookie[$cookieArgCount] =   $this->config->app->sessions->cookie->$cookieArg;
+                    if(property_exists($sessionsConfig->cookie, $cookieArg)) {
+                        $cookie[$cookieArgCount] =   $sessionsConfig->cookie->$cookieArg;
                     }
 
                     $cookieArgCount++;
                 }
             }
 
-            $cookie[1]  =   Time::unitsToSeconds($cookie[1]);
+            $cookie[1]  =   Time::unitsToSeconds($cookie[1]); // Life
+            $cookie[2]  =   $cookie[2] ?? ""; // Path
+            $cookie[3]  =   $cookie[3] ?? ""; // Domain
             call_user_func_array([$this->session,"setCookie"], $cookie);
 
             // PBKDF2 Hashing
             // Salt
-            if(property_exists($this->config->app->sessions, "hashSalt")) {
-                $this->session->setHashSalt(strval($this->config->app->sessions->hashSalt));
+            if(property_exists($sessionsConfig, "hashSalt")) {
+                $this->session->setHashSalt(strval($sessionsConfig->hashSalt));
             }
 
             // Cost
-            if(property_exists($this->config->app->sessions, "hashCost")) {
-                $this->session->setHashCost(intval($this->config->app->sessions->hashCost));
+            if(property_exists($sessionsConfig, "hashCost")) {
+                $this->session->setHashCost(intval($sessionsConfig->hashCost));
             }
 
             // Bootstrap Session
