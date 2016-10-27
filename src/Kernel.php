@@ -10,9 +10,11 @@ use Comely\Framework\Kernel\DateTime;
 use Comely\Framework\Kernel\ErrorHandler;
 use Comely\Framework\Kernel\PlainObject;
 use Comely\Framework\Kernel\Security;
+use Comely\IO\Cache\Cache;
 use Comely\IO\Database\Database;
 use Comely\IO\DependencyInjection\Container;
 use Comely\IO\DependencyInjection\Repository;
+use Comely\IO\Emails\Mailer;
 use Comely\IO\Filesystem\Disk;
 use Comely\IO\Filesystem\Exception\DiskException;
 use Comely\IO\i18n\Translator;
@@ -434,6 +436,35 @@ class Kernel extends Bootstrapper
         }
 
         return $this->client;
+    }
+
+    /**
+     * @return Cache
+     * @throws KernelException
+     */
+    public function getCache() : Cache
+    {
+        $this->isBootstrapped(__METHOD__);
+        if(!isset($this->cipher)) {
+            throw KernelException::instanceNotAvailable(__METHOD__);
+        }
+
+
+        return $this->cache;
+    }
+
+    /**
+     * @return Mailer
+     * @throws KernelException
+     */
+    public function getMailer() : Mailer
+    {
+        $this->isBootstrapped(__METHOD__);
+        if(!isset($this->mailer)) {
+            throw KernelException::instanceNotAvailable(__METHOD__);
+        }
+
+        return $this->mailer;
     }
 
     /**

@@ -3,16 +3,18 @@ declare(strict_types=1);
 
 namespace Comely\Framework\Kernel;
 
+use Comely\Framework\Kernel\Config\Prototype\App;
+use Comely\Framework\Kernel\Config\Prototype\Site;
 use Comely\Framework\KernelException;
 use Comely\IO\Yaml\Yaml;
 
 class Config
 {
-    /** @var PlainObject|null */
+    /** @var App|null */
     public $app;
     /** @var PlainObject|null */
     public $databases;
-    /** @var PlainObject|null */
+    /** @var Site|null */
     public $site;
 
     /**
