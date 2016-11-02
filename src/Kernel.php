@@ -8,6 +8,7 @@ use Comely\Framework\Kernel\Client;
 use Comely\Framework\Kernel\Config;
 use Comely\Framework\Kernel\DateTime;
 use Comely\Framework\Kernel\ErrorHandler;
+use Comely\Framework\Kernel\Memory;
 use Comely\Framework\Kernel\PlainObject;
 use Comely\Framework\Kernel\Security;
 use Comely\IO\Cache\Cache;
@@ -44,6 +45,8 @@ class Kernel extends Bootstrapper
     protected $env;
     /** @var array */
     protected $databases;
+    /** @var Memory */
+    protected $memory;
 
     /**
      * Framework Kernel constructor.
@@ -99,18 +102,16 @@ class Kernel extends Bootstrapper
         $this->loadConfig(); // Load configuration
 
         $this->bootstrapped =   true; // Declare bootstrapped
-        $this->postBootstrap(); // Post bootstrap execution
+        $this->security =   new Security($this); // Security
+        $this->client   =   new Client(); // Client
+        $this->memory   =   Memory::getInstance(); // Memory
+
+        // Set cache instance in memory
+        if(isset($this->cache)) {
+            $this->memory->setCache($this->cache);
+        }
 
         return $this;
-    }
-
-    /**
-     * This method is executed AFTER kernel is bootstrapped
-     */
-    private function postBootstrap()
-    {
-        $this->security =   new Security($this); // Security
-        $this->client   =  new Client(); // Client
     }
 
     /**
@@ -439,13 +440,21 @@ class Kernel extends Bootstrapper
     }
 
     /**
+     * @return Memory
+     */
+    public function memory() : Memory
+    {
+        return $this->memory();
+    }
+
+    /**
      * @return Cache
      * @throws KernelException
      */
     public function getCache() : Cache
     {
         $this->isBootstrapped(__METHOD__);
-        if(!isset($this->cipher)) {
+        if(!isset($this->cache)) {
             throw KernelException::instanceNotAvailable(__METHOD__);
         }
 
