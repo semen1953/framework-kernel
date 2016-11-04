@@ -601,7 +601,8 @@ class Kernel extends Bootstrapper
         if(!isset($id)) {
             // No reference ID provided, fetch first database
             $db =   reset($this->databases);
-            if(!$db) {
+            $id =   key($this->databases);
+            if(!$db ||  empty($id)) {
                 // No databases were defined
                 throw KernelException::dbNotFound("");
             }
