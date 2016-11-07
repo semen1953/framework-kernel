@@ -11,6 +11,8 @@ class Page
 {
     /** @var array */
     private $props;
+    /** @var array */
+    private $assets;
 
     /**
      * Page constructor.
@@ -59,10 +61,36 @@ class Page
     }
 
     /**
+     * @param string $href
+     * @return Page
+     */
+    public function addCSS(string $href) : self
+    {
+        $this->assets[] =   [
+            "type"  =>  "css",
+            "path"  =>  $href
+        ];
+        return $this;
+    }
+
+    /**
+     * @param string $src
+     * @return Page
+     */
+    public function addJScript(string $src) : self
+    {
+        $this->assets[] =   [
+            "type"  =>  "js",
+            "path"  =>  $src
+        ];
+        return $this;
+    }
+
+    /**
      * @return array
      */
     public function getArray() : array
     {
-        return $this->props;
+        return array_merge($this->props, ["assets" => $this->assets]);
     }
 }

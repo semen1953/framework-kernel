@@ -35,9 +35,8 @@ class Memory
 
     /**
      * Memory constructor.
-     * @param Cache|null $cache
      */
-    private function __construct(Cache $cache = null)
+    private function __construct()
     {
         $this->repo =   new Repository();
     }
@@ -48,7 +47,7 @@ class Memory
      */
     public function setCache(Cache $cache) : self
     {
-        $this->cache    =   $cache;
+        //$this->cache    =   $cache;
         return $this;
     }
 
@@ -79,7 +78,7 @@ class Memory
         if(is_callable($notFound)) {
             $callBack   =   call_user_func($notFound);
             if(is_object($callBack)) {
-                $this->set($key, $callBack);
+                $this->set($key, clone $callBack);
                 return $callBack;
             }
         }
@@ -101,7 +100,7 @@ class Memory
         $this->repo->push($object, $key);
         if($this->cache) {
             try {
-                $this->cache->set($key, $object);
+                $this->cache->set($key, clone $object);
             } catch (CacheException $e) {
                 trigger_error($e->getParsed(), E_USER_WARNING);
             }
