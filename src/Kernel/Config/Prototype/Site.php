@@ -11,6 +11,8 @@ namespace Comely\Framework\Kernel\Config\Prototype;
 class Site
 {
     /** @var null|string */
+    public $title;
+    /** @var null|string */
     public $domain;
     /** @var null|bool */
     public $https;
