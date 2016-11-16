@@ -23,6 +23,8 @@ class Cli
     private $app;
     /** @var float */
     private $timeStamp;
+    /** @var bool */
+    private $success;
 
     /**
      * Cli constructor.
@@ -33,12 +35,19 @@ class Cli
     {
         // First argument is name of Job
         // Strip off value at index 0 and then reset array
-        $job    =   $args[0] ?? "";
+        $job    =   array_key_exists(0, $args)  &&  !empty($args[0]) ? $args[0] : "default";
         unset($args[0]);
         $args   =   array_values($args);
 
+        // If no job was specified, make necessary corrections
+        if($job{0}  === "-") {
+            array_unshift($args, $job);
+            $job    =   "default";
+        }
+
         // Starting Time
         $this->timeStamp    =   microtime(true);
+        $this->success  =   false;
 
         // Check if Job class exists
         $this->job  =   sprintf('App\\Bin\\%s', \Comely::pascalCase($job));
@@ -48,7 +57,7 @@ class Cli
         foreach ($args as $arg) {
             $arg    =   explode("=", trim($arg));
             $flag   =   strtolower($arg[0]);
-            $value  =   $arg[1];
+            $value  =   $arg[1] ?? null;
 
             switch ($flag) {
                 case "-e":
@@ -68,6 +77,9 @@ class Cli
                     break;
                 case "-nocache":
                     $this->setup->cachedConfiguration   =   false;
+                    break;
+                case "-b":
+                    $this->setup->noSleep   =   true;
                     break;
                 case "-h":
                 case "--help":
@@ -92,23 +104,26 @@ class Cli
             }
 
             $this->app->bootstrap(); // Bootstrap Kernel
+            $this->app->errorHandler()->setFormat('[%type|strtoupper%] %message% in %file% on line # %line%');
+
             $this->introduceApp(); // Introduce App
             $this->run();
+            $this->success  =   true;
         } catch (\Throwable $t) {
             VividShell::Print(
-                '{red}%1$s:{/} %2$s {gray}in{/i} %3$s {gray}on line{/i} %4$s',
-                300,
+                '{red}%1$s:{/} %2$s',
+                $this->sleep(200),
                 [
                     $t instanceof \Exception ? get_class($t) : "Fatal Error",
-                    $t->getMessage(),
-                    $t->getFile(),
-                    $t->getLine()
+                    $t->getMessage()
                 ]
             );
 
+            VividShell::Print("{yellow}File:{/} %s", 0, [$t->getFile()]);
+            VividShell::Print("{yellow}Line:{/} {cyan}%d", 0, [$t->getLine()]);
             VividShell::Print("");
             VividShell::Print("Debug Backtrace");
-            VividShell::Loading(".", 5, 150);
+            VividShell::Loading(".", 5, $this->sleep(150));
             VividShell::Print("");
 
             print $t->getTraceAsString();
@@ -123,6 +138,15 @@ class Cli
     }
 
     /**
+     * @param int $ms
+     * @return int
+     */
+    private function sleep(int $ms = 0) : int
+    {
+        return $this->setup->noSleep ? 0 : $ms;
+    }
+
+    /**
      * Run a job
      *
      * @throws CliException
@@ -131,12 +155,19 @@ class Cli
     private function run()
     {
         $jobClass   =   (string) $this->job;
-        if(!class_exists($jobClass)    ||  !is_a($jobClass, __NAMESPACE__ . "\\AbstractJob", true)) {
+        if(!$this->setup->noSleep) {
+
+        }
+        VividShell::Print("Loading Job", $this->sleep(0), null, "");
+        VividShell::Loading(".", 5, $this->sleep(150), "");
+
+        if(!class_exists($jobClass)    ||  !is_a($jobClass, __NAMESPACE__ . "\\Cli\\AbstractJob", true)) {
+            VividShell::Print(" {red}%s{/}", $this->sleep(0), [$jobClass]);
+            VividShell::Print("");
             throw CliException::jobNotFound($jobClass);
         }
 
-        VividShell::Print("Loading Job: {cyan}%s{/}", 100, [$jobClass], "");
-        VividShell::Loading(".", 6, 150);
+        VividShell::Print(" {cyan}%s{/}", $this->sleep(0), [$jobClass]);
         VividShell::Print("");
 
         $this->job  =   new $jobClass($this->app);
@@ -148,12 +179,21 @@ class Cli
      */
     private function headers()
     {
-        VividShell::Print("{magenta}{b}Comely Framework Kernel {/}{grey}v%s", 300, [Kernel::VERSION]);
-        VividShell::Print("{yellow}Comely IO {grey}v%s", 300, [\Comely::VERSION]);
+        VividShell::Print(
+            "{magenta}{b}{invert}Comely Framework Kernel{/} {grey}v%s",
+            $this->sleep(300),
+            [
+                Kernel::VERSION
+            ]
+        );
+        VividShell::Print("{yellow}Comely IO {grey}v%s", $this->sleep(300), [\Comely::VERSION]);
         VividShell::Print("");
-        VividShell::Print("Loading app", 0, null, "");
-        VividShell::Loading(".", 10, 100);
-        VividShell::Print("");
+
+        if(!$this->setup->noSleep) {
+            VividShell::Print("Loading app", $this->sleep(0), null, "");
+            VividShell::Loading(".", 10, $this->sleep(100));
+            VividShell::Print("");
+        }
     }
 
     /**
@@ -168,14 +208,16 @@ class Cli
             $appNode    =   [];
         }
 
+        VividShell::Loading("~", 5, $this->sleep(0));
         VividShell::Print(
-            '{green}%1$s{/} {gray}v%2$s{/}',
-            300,
+            '{magenta}%1$s{/} {gray}v%2$s{/}',
+            $this->sleep(0),
             [
                 $appNode["name"] ?? "Unknown App",
                 $appNode["version"] ?? "0.0.0"
             ]
         );
+        VividShell::Loading("~", 5, $this->sleep(0));
         VividShell::Print("");
     }
 
@@ -184,20 +226,46 @@ class Cli
      */
     private function footer()
     {
+        // Completed
+        VividShell::Print("");
+        VividShell::Print("");
+        VividShell::Loading("~", 5, $this->sleep(0));
+
+        // Errors
+        $errors =   $this->app->errorHandler()->fetchAll();
+        if(count($errors)   <=  0) {
+            if($this->success) {
+                VividShell::Print("{green}{b}Completed!{/}", $this->sleep(100));
+                VividShell::Print("{gray}%d Triggered Errors", $this->sleep(0), [count($errors)]);
+            }
+        } else {
+            VividShell::Print("{red}Warning", $this->sleep(100));
+            VividShell::Print("{yellow}%d Triggered Errors", $this->sleep(0), [count($errors)]);
+            VividShell::Print("");
+
+            foreach($errors as $error) {
+                VividShell::Print(
+                    $error["formatted"] ?? $error["message"] ?? "",
+                    $this->sleep(100)
+                );
+            }
+        }
+
+        // Footprint
         VividShell::Print("");
         VividShell::Print(
-            "{gray}Execution Time:{/} %s",
-            0,
+            "Execution Time: {gray}%s seconds{/}",
+            $this->sleep(0),
             [
-                number_format((microtime(true)-$this->timeStamp), 8)
+                number_format((microtime(true)-$this->timeStamp), 4)
             ]
         );
         VividShell::Print(
-            "{gray}Memory Usage:{/} %sMB of %sMB",
-            0,
+            "Memory Usage: {gray}%sMB{/} of {gray}%sMB{/}",
+            $this->sleep(0),
             [
-                number_format((memory_get_usage(false)/1024)/1024, 8, ".", ","),
-                number_format((memory_get_usage(true)/1024)/1024, 8, ".", ",")
+                round((memory_get_usage(false)/1024)/1024, 2),
+                round((memory_get_usage(true)/1024)/1024, 2)
             ]
         );
     }

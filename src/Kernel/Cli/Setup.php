@@ -19,6 +19,8 @@ class Setup
     public $dumpFile;
     /** @var bool */
     public $cachedConfiguration;
+    /** @var bool */
+    public $noSleep;
 
     /**
      * Setup constructor.
@@ -28,5 +30,6 @@ class Setup
         $this->environment  =   "dev";
         $this->force    =   false;
         $this->cachedConfiguration  =   true;
+        $this->noSleep  =   false;
     }
 }
