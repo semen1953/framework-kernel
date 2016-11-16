@@ -12,7 +12,8 @@
   "require": {
     "php": ">=7.0.0",
     "comelyio/comely": ">=1.0.0",
-    "comelyio/knit": ">=1.0.0"
+    "comelyio/knit": ">=1.0.0",
+    "comelyio/vivid-shell": ">=0.1"
   },
   "autoload": {
     "psr-4": {

@@ -10,7 +10,7 @@ namespace Comely\Framework\Kernel;
 interface Constants
 {
     /** string Version (Major.Minor.Release-Suffix) */
-    const VERSION   =   "1.0.0-RC3";
+    const VERSION   =   "1.0.0-RC7";
     /** int Version (Major * 10000 + Minor * 100 + Release) */
     const VERSION_ID    =   10000;
 
