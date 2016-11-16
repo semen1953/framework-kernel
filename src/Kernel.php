@@ -102,9 +102,13 @@ class Kernel extends Bootstrapper
         $this->loadConfig(); // Load configuration
 
         $this->bootstrapped =   true; // Declare bootstrapped
-        $this->security =   new Security($this); // Security
         $this->client   =   new Client(); // Client
         $this->memory   =   Memory::getInstance(); // Memory
+
+        // Security component requires Session component
+        if(isset($this->session)) {
+            $this->security =   new Security($this); // Security
+        }
 
         // Set cache instance in memory
         if(isset($this->cache)) {
