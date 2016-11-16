@@ -172,7 +172,7 @@ class Cli
             '{green}%1$s{/} {gray}v%2$s{/}',
             300,
             [
-                $appNode["title"] ?? "Unknown App",
+                $appNode["name"] ?? "Unknown App",
                 $appNode["version"] ?? "0.0.0"
             ]
         );
