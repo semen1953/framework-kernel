@@ -155,7 +155,7 @@ class Cli
      * @param int $ms
      * @return int
      */
-    private function sleep(int $ms = 0) : int
+    public function sleep(int $ms = 0) : int
     {
         return $this->setup->noSleep ? 0 : $ms;
     }
@@ -172,15 +172,15 @@ class Cli
         VividShell::Print("Loading Job: ", $this->sleep(0), null, "");
         VividShell::Repeat(".", rand(5, 10), $this->sleep(150), "");
         if(!class_exists($jobClass)    ||  !is_a($jobClass, __NAMESPACE__ . "\\Cli\\AbstractJob", true)) {
-            VividShell::Print("{red}{invert} %s {/}", $this->sleep(0), [$jobClass]);
+            VividShell::Print(" {red}{b}{invert} %s {/}", $this->sleep(0), [$jobClass]);
             VividShell::Print("");
             throw CliException::jobNotFound($jobClass);
         }
 
-        VividShell::Print("{green}{invert} %s {/}", $this->sleep(0), [$jobClass]);
+        VividShell::Print(" {green}{b}{invert} %s {/}", $this->sleep(0), [$jobClass]);
         VividShell::Print("");
 
-        $this->job  =   new $jobClass($this->app);
+        $this->job  =   new $jobClass($this->app, $this);
         $this->job->run();
     }
 
@@ -206,8 +206,8 @@ class Cli
      */
     private function headers()
     {
-        VividShell::Print("{magenta}Comely IO{grey} v%s", $this->sleep(300), [\Comely::VERSION]);
-        VividShell::Print("{magenta}Framework Kernel{/} {gray}v%s", $this->sleep(300), [Kernel::VERSION]);
+        VividShell::Print("{magenta}{b}Comely IO{grey} v%s", $this->sleep(300), [\Comely::VERSION]);
+        VividShell::Print("{magenta}{b}Framework Kernel{/} {gray}v%s", $this->sleep(300), [Kernel::VERSION]);
         VividShell::Print("");
     }
 
@@ -217,9 +217,10 @@ class Cli
     private function introduceApp()
     {
         // Loaded components
-        VividShell::Type("Includes: ", $this->sleep(100), "");
+        //VividShell::Print("Includes: ", $this->sleep(100));
         foreach($this->app->getContainer()->list() as $component) {
-            VividShell::Print('{gray}├ {cyan}%s{/}', $this->sleep(150), [$component]);
+            //VividShell::Print('{gray}├ {cyan}%s{/}', $this->sleep(150), [$component]);
+            VividShell::Print('{cyan}%s{/}', $this->sleep(150), [$component]);
         }
 
         VividShell::Print("");
@@ -246,7 +247,6 @@ class Cli
     private function footer()
     {
         // Completed
-        VividShell::Print("");
         VividShell::Print("");
         VividShell::Repeat("~", 5, $this->sleep(0));
 

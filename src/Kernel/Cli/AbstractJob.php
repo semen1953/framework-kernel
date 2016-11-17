@@ -12,15 +12,19 @@ use Comely\Framework\Kernel;
 abstract class AbstractJob
 {
     /** @var Kernel */
-    private $app;
+    protected $app;
+    /** @var Kernel\Cli */
+    protected $cli;
 
     /**
      * AbstractJob constructor.
      * @param Kernel $app
+     * @param Kernel\Cli $cli
      */
-    public function __construct(Kernel $app)
+    final public function __construct(Kernel $app, Kernel\Cli $cli)
     {
         $this->app  =   $app;
+        $this->cli  =   $cli;
     }
 
     abstract public function run();
