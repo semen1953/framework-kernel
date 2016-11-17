@@ -35,14 +35,14 @@ class Cli
     {
         // First argument is name of Job
         // Strip off value at index 0 and then reset array
-        $job    =   array_key_exists(0, $args)  &&  !empty($args[0]) ? $args[0] : "default";
+        $job    =   array_key_exists(0, $args)  &&  !empty($args[0]) ? $args[0] : "console";
         unset($args[0]);
         $args   =   array_values($args);
 
         // If no job was specified, make necessary corrections
         if($job{0}  === "-") {
             array_unshift($args, $job);
-            $job    =   "default";
+            $job    =   "console";
         }
 
         // Starting Time
@@ -50,7 +50,7 @@ class Cli
         $this->success  =   false;
 
         // Check if Job class exists
-        $this->job  =   sprintf('App\\Bin\\%s', \Comely::pascalCase($job));
+        $this->job  =   sprintf('bin\\%s', strtolower($job));
 
         // CLI setup
         $this->setup    =   new Setup();
@@ -83,7 +83,7 @@ class Cli
                     break;
                 case "-h":
                 case "--help":
-                    $this->job  =   "App\\Bin\\Help";
+                    $this->job  =   "bin\\help";
                     break;
             }
         } unset($arg, $flag, $value);
@@ -94,6 +94,7 @@ class Cli
      */
     public function bootstrap(array $components = null)
     {
+        $this->banner();
         // Todo: Output buffering ON
         $this->headers();
 
@@ -105,6 +106,19 @@ class Cli
 
             $this->app->bootstrap(); // Bootstrap Kernel
             $this->app->errorHandler()->setFormat('[%type|strtoupper%] %message% in %file% on line # %line%');
+
+            // Auto-loader for bin/* files
+            $rootPath   =   $this->app->rootPath();
+            spl_autoload_register(function ($class) use($rootPath) {
+                if(preg_match('/^bin\\\\[a-zA-Z0-9\_]+$/', $class)) {
+                    $class  =   explode("\\", $class)[1] ?? null;
+                    $path   =   sprintf('%1$s%3$sbin%3$s%2$s', $rootPath, $class, DIRECTORY_SEPARATOR);
+                    if(@is_file($path)) {
+                        /** @noinspection PhpIncludeInspection */
+                        @include_once($path);
+                    }
+                }
+            });
 
             $this->introduceApp(); // Introduce App
             $this->run();
@@ -123,7 +137,7 @@ class Cli
             VividShell::Print("{yellow}Line:{/} {cyan}%d", 0, [$t->getLine()]);
             VividShell::Print("");
             VividShell::Print("Debug Backtrace");
-            VividShell::Loading(".", 5, $this->sleep(150));
+            VividShell::Repeat(".", 5, $this->sleep(150));
             VividShell::Print("");
 
             print $t->getTraceAsString();
@@ -155,19 +169,15 @@ class Cli
     private function run()
     {
         $jobClass   =   (string) $this->job;
-        if(!$this->setup->noSleep) {
-
-        }
-        VividShell::Print("Loading Job", $this->sleep(0), null, "");
-        VividShell::Loading(".", 5, $this->sleep(150), "");
-
+        VividShell::Print("Loading Job: ", $this->sleep(0), null, "");
+        VividShell::Repeat(".", rand(5, 10), $this->sleep(150), "");
         if(!class_exists($jobClass)    ||  !is_a($jobClass, __NAMESPACE__ . "\\Cli\\AbstractJob", true)) {
-            VividShell::Print(" {red}%s{/}", $this->sleep(0), [$jobClass]);
+            VividShell::Print("{red}{invert} %s {/}", $this->sleep(0), [$jobClass]);
             VividShell::Print("");
             throw CliException::jobNotFound($jobClass);
         }
 
-        VividShell::Print(" {cyan}%s{/}", $this->sleep(0), [$jobClass]);
+        VividShell::Print("{green}{invert} %s {/}", $this->sleep(0), [$jobClass]);
         VividShell::Print("");
 
         $this->job  =   new $jobClass($this->app);
@@ -175,25 +185,30 @@ class Cli
     }
 
     /**
+     * Large COMELY banner
+     */
+    private function banner()
+    {
+        VividShell::Print("");
+        VividShell::Print("{yellow}  ,ad8888ba,   ,ad8888ba,   88b           d88 88888888888 88     8b        d8  ");
+        VividShell::Print('{yellow} d8"\'    `"8b d8"\'    `"8b  888b         d888 88          88      Y8,    ,8P   ');
+        VividShell::Print('{yellow}d8\'          d8\'        `8b 88`8b       d8\'88 88          88       Y8,  ,8P  ');
+        VividShell::Print('{yellow}88           88          88 88 `8b     d8\' 88 88aaaaa     88        "8aa8"    ');
+        VividShell::Print('{yellow}88           88          88 88  `8b   d8\'  88 88"""""     88         `88\'      ');
+        VividShell::Print('{yellow}Y8,          Y8,        ,8P 88   `8b d8\'   88 88          88          88       ');
+        VividShell::Print('{yellow} Y8a.    .a8P Y8a.    .a8P  88    `888\'    88 88          88          88       ');
+        VividShell::Print('{yellow}  `"Y8888Y"\'   `"Y8888Y"\'   88     `8\'     88 88888888888 88888888888 88       ');
+        VividShell::Print("");
+    }
+
+    /**
      * Print headers
      */
     private function headers()
     {
-        VividShell::Print(
-            "{magenta}{b}{invert}Comely Framework Kernel{/} {grey}v%s",
-            $this->sleep(300),
-            [
-                Kernel::VERSION
-            ]
-        );
-        VividShell::Print("{yellow}Comely IO {grey}v%s", $this->sleep(300), [\Comely::VERSION]);
+        VividShell::Print("{magenta}Comely IO{grey} v%s", $this->sleep(300), [\Comely::VERSION]);
+        VividShell::Print("{magenta}Framework Kernel{/} {gray}v%s", $this->sleep(300), [Kernel::VERSION]);
         VividShell::Print("");
-
-        if(!$this->setup->noSleep) {
-            VividShell::Print("Loading app", $this->sleep(0), null, "");
-            VividShell::Loading(".", 10, $this->sleep(100));
-            VividShell::Print("");
-        }
     }
 
     /**
@@ -201,23 +216,27 @@ class Cli
      */
     private function introduceApp()
     {
-        // Application Title
-        try {
-            $appNode    =   $this->app->config()->getNode("app");
-        } catch (\Exception $e) {
-            $appNode    =   [];
+        // Loaded components
+        VividShell::Type("Includes: ", $this->sleep(100), "");
+        foreach($this->app->getContainer()->list() as $component) {
+            VividShell::Print('{gray}├ {cyan}%s{/}', $this->sleep(150), [$component]);
         }
 
-        VividShell::Loading("~", 5, $this->sleep(0));
-        VividShell::Print(
-            '{magenta}%1$s{/} {gray}v%2$s{/}',
-            $this->sleep(0),
-            [
-                $appNode["name"] ?? "Unknown App",
-                $appNode["version"] ?? "0.0.0"
-            ]
-        );
-        VividShell::Loading("~", 5, $this->sleep(0));
+        VividShell::Print("");
+
+        // Application Title
+        VividShell::Repeat("~", 5, $this->sleep(150));
+        $lineNum   =   0;
+        array_map(function ($line) use (&$lineNum) {
+            $lineNum++;
+            $eol    =   $lineNum   !== 2 ? PHP_EOL : "";
+            VividShell::Print("{magenta}{b}{invert}" . $line, $this->sleep(0), null, $eol);
+            if($lineNum === 2) {
+                VividShell::Print(' {gray}v%s', $this->sleep(0), [@constant("App::VERSION") ?? "0.0.0"]);
+            }
+        }, VividShell\ASCII\Banners::Digital(@constant("App::NAME") ?? "Untitled App"));
+
+        VividShell::Repeat("~", 5, $this->sleep(150));
         VividShell::Print("");
     }
 
@@ -229,7 +248,7 @@ class Cli
         // Completed
         VividShell::Print("");
         VividShell::Print("");
-        VividShell::Loading("~", 5, $this->sleep(0));
+        VividShell::Repeat("~", 5, $this->sleep(0));
 
         // Errors
         $errors =   $this->app->errorHandler()->fetchAll();
