@@ -90,11 +90,19 @@ class Cli
     }
 
     /**
+     * @return Setup
+     */
+    public function setup() : Setup
+    {
+        return $this->setup;
+    }
+
+    /**
      * @param array|null $components
      */
     public function bootstrap(array $components = null)
     {
-        $this->banner();
+        //$this->banner();
         // Todo: Output buffering ON
         $this->headers();
 
@@ -187,7 +195,7 @@ class Cli
     /**
      * Large COMELY banner
      */
-    private function banner()
+    public function banner()
     {
         VividShell::Print("");
         VividShell::Print("{yellow}  ,ad8888ba,   ,ad8888ba,   88b           d88 88888888888 88     8b        d8  ");
@@ -206,8 +214,8 @@ class Cli
      */
     private function headers()
     {
-        VividShell::Print("{magenta}{b}Comely IO{grey} v%s", $this->sleep(300), [\Comely::VERSION]);
-        VividShell::Print("{magenta}{b}Framework Kernel{/} {gray}v%s", $this->sleep(300), [Kernel::VERSION]);
+        VividShell::Print("{yellow}{b}{invert}Comely IO{/} {grey}v%s", $this->sleep(300), [\Comely::VERSION]);
+        VividShell::Print("{magenta}{b}{invert}Framework Kernel{/} {gray}v%s", $this->sleep(300), [Kernel::VERSION]);
         VividShell::Print("");
     }
 
