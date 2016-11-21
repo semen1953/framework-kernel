@@ -13,6 +13,7 @@ use Comely\Framework\Kernel\PlainObject;
 use Comely\Framework\Kernel\Security;
 use Comely\IO\Cache\Cache;
 use Comely\IO\Database\Database;
+use Comely\IO\Database\Schema;
 use Comely\IO\DependencyInjection\Container;
 use Comely\IO\DependencyInjection\Repository;
 use Comely\IO\Emails\Mailer;
@@ -215,6 +216,9 @@ class Kernel extends Bootstrapper
             if($this->container->has("Database")) {
                 $this->setDatabases($this->config->databases);
             }
+
+            // Fluent/ORM callback args
+            Schema::setCallbackArgs($this);
 
             // Remove databases node from config
             unset($this->config->databases);
