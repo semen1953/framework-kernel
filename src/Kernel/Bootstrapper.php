@@ -441,14 +441,14 @@ abstract class Bootstrapper implements Constants
 
         // Configure SMTP
         if($useSMTP) {
-            $smtpHost   =   $mailerConfig->host ?? "127.0.0.1";
-            $smtpPort   =   intval($mailerConfig->port ?? 25);
-            $smtpTimeout    =   intval($mailerConfig->timeOut ?? 1);
-            $smtpUsername   =   $mailerConfig->username ?? "";
-            $smtpPassword   =   $mailerConfig->password ?? "";
-            $smtpTLS    =   $mailerConfig->useTls ?? true;
+            $smtpHost   =   $mailerConfig->smtp->host ?? "127.0.0.1";
+            $smtpPort   =   intval($mailerConfig->smtp->port ?? 25);
+            $smtpTimeout    =   intval($mailerConfig->smtp->timeOut ?? 1);
+            $smtpUsername   =   $mailerConfig->smtp->username ?? "";
+            $smtpPassword   =   $mailerConfig->smtp->password ?? "";
+            $smtpTLS    =   $mailerConfig->smtp->useTls ?? true;
             $smtpTLS    =   $smtpTLS    === false ? false : true;
-            $smtpServerName =   $mailerConfig->serverName ?? null;
+            $smtpServerName =   $mailerConfig->smtp->serverName ?? null;
 
             $smtp   =   (new Mailer\SMTP($smtpHost, $smtpPort, $smtpTimeout))
                 ->useTLS($smtpTLS);
@@ -459,6 +459,9 @@ abstract class Bootstrapper implements Constants
             if(!empty($smtpServerName)  &&  is_string($smtpServerName)) {
                 $smtp->serverName($smtpServerName);
             }
+
+            // Bind SMTP agent to mailer
+            $this->mailer->bindAgent($smtp);
         }
     }
 }
