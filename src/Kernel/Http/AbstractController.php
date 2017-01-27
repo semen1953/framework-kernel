@@ -123,16 +123,22 @@ abstract class AbstractController implements ControllerInterface
                 $callMethod = \Comely::camelCase($callMethod);
             } else {
                 // Necessary param not found
-                if ($this->method !== "GET") {
-                    // Throw exception if request method is not GET
-                    throw new HttpException(
-                        get_called_class(),
-                        sprintf('Http requests must have required parameter "%s"', self::REST_METHOD_PARAM)
-                    );
+                switch ($this->method) {
+                    // Check if HTTP method is GET
+                    case "GET":
+                        // Default method without explicit param is getView
+                        $callMethod =   "getView";
+                        break;
+                    default:
+                        // Check if a default method exists for request HTTP methods (i.e. postDefault)
+                        $callMethod  =   sprintf('%sDefault', strtolower($this->method));
+                        if(!method_exists($this, $callMethod)) {
+                            throw new HttpException(
+                                get_called_class(),
+                                sprintf('Http requests must have required parameter "%s"', self::REST_METHOD_PARAM)
+                            );
+                        }
                 }
-
-                // If method is GET, default method is getView
-                $callMethod = "getView";
             }
 
 
