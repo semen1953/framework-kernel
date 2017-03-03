@@ -12,5 +12,5 @@ use Comely\Framework\KernelException;
 class HttpException extends KernelException
 {
     /** @var string */
-    protected static $componentId   =   "Comely\\Framework\\Kernel\\Http";
+    protected static $componentId   =   'Comely\Framework\Kernel\Http';
 }

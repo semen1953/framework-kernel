@@ -84,6 +84,10 @@ abstract class AbstractController implements ControllerInterface
 
         // Set "csrfToken" prop in Page object
         $this->page->setProp("csrfToken", $csrfToken);
+        // Set "language" prop in Page object
+        if($this->app->hasTranslator()) {
+            $this->page->setProp("language", $this->app->getTranslatorLanguage());
+        }
 
         // Assign variables to Knit
         $knit->assign("errors", $this->app->errorHandler()->fetchAll());

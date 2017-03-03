@@ -349,24 +349,61 @@ class Kernel extends Bootstrapper
     }
 
     /**
-     * @param string $language
+     * @param string $lang
      * @return bool
-     * @throws KernelException
      */
-    public function setLanguage(string $language) : bool
+    public function setTranslatorLanguage(string $lang) : bool
     {
         $this->isBootstrapped(__METHOD__);
-        if($this->getTranslator()->languageExists($language)) {
+        if(!$this->hasTranslator()) {
+            trigger_error('Translator component is not registered', E_USER_WARNING);
+            return false;
+        }
+
+        $cache  =   false;
+        if($this->config->app->translations->cache  === true) {
+            $cache  =   true;
+        }
+
+        try {
+            $language   =   $cache  === true ?
+                $this->getCachedLanguage($lang) : $this->translator->language($lang);
+            $this->translator->bindLanguage($language);
             $this->getSession()
                 ->getBags()
                 ->getBag("Comely")
                 ->getBag("Framework")
-                ->set("language", $language);
+                ->set("language", $lang);
 
             return true;
+        } catch (\Exception $e) {
+            trigger_error(
+                sprintf(
+                    '%1$s: [%2$s][%3$d] %4$s',
+                    __METHOD__,
+                    get_class($e),
+                    $e->getCode(),
+                    $e->getMessage()
+                ),
+                E_USER_WARNING
+            );
         }
 
         return false;
+    }
+
+    /**
+     * @return bool|string
+     */
+    public function getTranslatorLanguage()
+    {
+        $this->isBootstrapped(__METHOD__);
+        if(!$this->hasTranslator()) {
+            trigger_error('Translator component is not registered', E_USER_WARNING);
+            return false;
+        }
+
+        return $this->translator->getBoundLanguage()->name();
     }
 
     /**
@@ -471,6 +508,14 @@ class Kernel extends Bootstrapper
     }
 
     /**
+     * @return bool
+     */
+    public function hasCache() : bool
+    {
+        return $this->cache instanceof Cache ? true : false;
+    }
+
+    /**
      * @return Mailer
      * @throws KernelException
      */
@@ -482,6 +527,14 @@ class Kernel extends Bootstrapper
         }
 
         return $this->mailer;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasMailer() : bool
+    {
+        return $this->mailer instanceof Mailer ? true : false;
     }
 
     /**
@@ -499,6 +552,14 @@ class Kernel extends Bootstrapper
     }
 
     /**
+     * @return bool
+     */
+    public function hasCipher() : bool
+    {
+        return $this->cipher instanceof Cipher ? true : false;
+    }
+
+    /**
      * @return ComelySession
      * @throws KernelException
      */
@@ -510,6 +571,14 @@ class Kernel extends Bootstrapper
         }
 
         return $this->session->getSession();
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasSession() : bool
+    {
+        return $this->session instanceof Session ? true : false;
     }
 
     /**
@@ -541,6 +610,14 @@ class Kernel extends Bootstrapper
     }
 
     /**
+     * @return bool
+     */
+    public function hasTranslator() : bool
+    {
+        return $this->translator instanceof Translator ? true : false;
+    }
+
+    /**
      * @return Knit
      * @throws KernelException
      */
@@ -552,6 +629,14 @@ class Kernel extends Bootstrapper
         }
 
         return $this->knit;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasKnit() : bool
+    {
+        return $this->knit instanceof Knit ? true : false;
     }
 
     /**

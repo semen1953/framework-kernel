@@ -277,7 +277,7 @@ abstract class Bootstrapper implements Constants
             $this->session->start();
 
             // If storage is filesystem, save instance in disks repo.
-            if($storage instanceof Disk) {
+            if($storage instanceof Storage\Disk) {
                 $this->disks->push($storage, "sessions");
             }
         } catch(\ComelyException $e) {
@@ -317,11 +317,10 @@ abstract class Bootstrapper implements Constants
 
         // Cache of compiled language files?
         $cache  =   false;
-        if(
-            property_exists($this->config->app->translations, "cache")   &&
-            $this->config->app->translations->cache === true
-        ) {
-            $cache  =   true;
+        if(property_exists($this->config->app->translations, "cache")) {
+            if($this->config->app->translations->cache === true) {
+                $cache  =   true;
+            }
         }
 
         try {
@@ -337,6 +336,7 @@ abstract class Bootstrapper implements Constants
                 ->getBags()
                 ->getBag("Comely")
                 ->getBag("Framework");
+
             /** @var $currentLocale string|null */
             $currentLocale  =   $bag->get("language") ?? $this->config->app->translations->fallBack;
 
@@ -359,6 +359,7 @@ abstract class Bootstrapper implements Constants
 
             $this->translator->bindLanguage($locale);
             $this->translator->bindFallbackLanguage($fallBack);
+            $bag->set("language", $currentLocale);
         } catch(\ComelyException $e) {
             throw new BootstrapException(__METHOD__, $e->getMessage(), $e->getCode());
         }
@@ -369,7 +370,7 @@ abstract class Bootstrapper implements Constants
      * @param string $lang
      * @return Translator\Language
      */
-    protected function getCachedLanguage(string $lang) : Translator\Language
+    public function getCachedLanguage(string $lang) : Translator\Language
     {
         // Get cache Disk instance
         $cache  =   $this->disks->pull("cache");
